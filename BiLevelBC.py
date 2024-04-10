@@ -4,7 +4,7 @@ I = 100            # number of customer zones
 J = 50             # number of facilities
 K = 20             # number of pricing levels      
 
-lamda = 0.6
+lamda = 0.6        # paramter that controls the budget (cost of the outside option). 
 f = 2000*np.ones(J)
 price_bound = 20
 ####################################################
@@ -26,16 +26,16 @@ def generate_data(I,J):
     d = np.random.uniform(1,100,I)
     return(l,d)
 ####################################################
-l,d = generate_data(I,J) ### distance and demand
+l,d = generate_data(I,J)         ### distance and demand
 
-c = l*0.5
-b = np.average(c,axis=1)*lamda
+c = l*0.5                        ### accessing cost
+b = np.average(c,axis=1)*lamda   ### budget (cost of the outside option)
 
 ### pricing level
 p = np.zeros((J,K))
 for j in range(J):
     p[j] = (np.arange(0,K)+1)*price_bound/K
-    
+  
 theta = np.zeros((I,J,K))
 for i in range(I):
     for j in range(J):

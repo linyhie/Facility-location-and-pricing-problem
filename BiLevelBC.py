@@ -1,17 +1,12 @@
 import numpy as np
 
 I = 100            # number of customer zones
-J = 50             # number of leader facilities
-
-K = 20
+J = 50             # number of facilities
+K = 20             # number of pricing levels      
 
 lamda = 0.6
-
-f = 1000*np.ones(J)
-
+f = 2000*np.ones(J)
 price_bound = 20
-
-timelimit = 7200*4
 ####################################################
 ''' generate random dataset'''
 def generate_data(I,J):
@@ -30,7 +25,7 @@ def generate_data(I,J):
     np.random.seed(500)
     d = np.random.uniform(1,100,I)
     return(l,d)
-
+####################################################
 l,d = generate_data(I,J) ### distance and demand
 
 c = l*0.5
@@ -50,10 +45,9 @@ pi = np.zeros((I,J,K))
 for i in range(I):
     pi[i] = b[i] - theta[i]
 ####################################################
-### delta_{ijk} means whether facility j at k level is dominated by outside option.
-### delta_{ijk} = 1 if it is dominated; 0, if not    
+### delta_{ijk} means whether facility j at k level is dominated by outside option, 
+### delta_{ijk} = 1 if it is dominated, i.e., i.e., pi[i,j,k] = b[i] - theta[i,j,k] < 0 
 delta = pi < 0  ### y_{ijk} can be 1 only if pi_{ijk} > 0
-
 
 ### starting tracking time
 import time as TIME
@@ -62,17 +56,15 @@ start_time = TIME.time()
 import gurobipy as grb
 model = grb.Model()
 model.setParam('OutputFlag', 1)
-model.setParam('TimeLimit',timelimit)
+model.setParam('TimeLimit', 7200*4)
 model.setParam('DisplayInterval',200)
-#model.setParam('Cuts',3)
 
 x = model.addVars(J,K,vtype=grb.GRB.BINARY)
 y = model.addVars(I,J,K) 
 w = model.addVars(J,vtype=grb.GRB.BINARY)
 
 model.setObjective(grb.quicksum(d[i]*p[j,k]*y[i,j,k] for i in range(I) for j in range(J) for k in range(K))
-                              - grb.quicksum(f[j]*w[j] for j in range(J)), 
-                                grb.GRB.MAXIMIZE)
+                              - grb.quicksum(f[j]*w[j] for j in range(J)), grb.GRB.MAXIMIZE)
 
 model.addConstr(grb.quicksum(w[j] for j in range(J)) >= 1)
 
@@ -83,7 +75,7 @@ for i in range(I):
     for j in range(J):
         for k in range(K):
             model.addConstr(y[i,j,k] <= x[j,k])
-            model.addConstr(y[i,j,k] <= 1 - delta[i,j,k])  ### Preprossing: y_{ijk} can be 1 only if theta_{ijk} <= b_i         
+            model.addConstr(y[i,j,k] <= 1 - delta[i,j,k])  ### Preprossing: y_{ijk} can be 1 only if delta[i,j,k] = 0      
 
 def solve_follower_problem(set_open):
      ### solve for y        
@@ -94,10 +86,8 @@ def solve_follower_problem(set_open):
          for o in range(number_facilities):
              utility_of_open.append(pi[i][set_open[o]])
          index = np.argmax(utility_of_open)
-
          if utility_of_open[index] >= 0:          ### select some facility
              y_last[i][set_open[index]] = 1
-         #else: (utility_of_open[index] < 0: ### customer will select the outside option and balk, i.e., the best surplus < 0)
      return(y_last)
         
 def lazy_cut(model, where):    
@@ -145,19 +135,4 @@ price = np.sum(x_sol*p,axis=1)
 print("with price", price[np.nonzero(price)])
 print("average price", round(np.average(price[np.nonzero(price)]),3))
 print("# cuts",  model._number_of_cuts)
-print("Number of branch and cut nodes is ", round(model.NodeCount))
-################################      
-#y_sol = np.zeros((I,J,K))
-#for i in range(I):
-#    for j in range(J):
-#        for k in range(K):
-#            y_sol[i,j,k] = round(y[i,j,k].x)
-#           
-#set_open = [(j,k) for j in range(J) for k in range(K) if x_sol[j,k] > 0.5]  
-#y_last = solve_follower_problem(set_open)  
-#check_obj = - f@np.array(w_sol)
-#for i in range(I):
-#    check_obj += d[i]* np.sum(y_last[i]*r)
-#
-#print("Check", round(check_obj,1))
-#dif = np.sum(np.abs(y_sol - y_last))     
+print("Number of branch and cut nodes is ", round(model.NodeCount)) 

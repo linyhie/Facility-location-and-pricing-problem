@@ -7,6 +7,9 @@ This repository contains material for the paper
  
     "Facility location and pricing problem: Discretized mill price and exact algorithms" by Yun Hui Lin, Qingyun Tian
 
+Use the code **BiLevelBC.py**
+
+
 ## Cite
 
 To cite the contents of this repository, please cite the paper

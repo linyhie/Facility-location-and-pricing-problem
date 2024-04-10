@@ -1,6 +1,5 @@
 # [Facility location and pricing problem: Discretized mill price and exact algorithms](https://doi.org/10.1016/j.ejor.2022.11.052)
 
-
 This archive is distributed under the [MIT License](LICENSE).
 
 This repository contains material for the paper 

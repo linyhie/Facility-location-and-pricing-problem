@@ -1,6 +1,4 @@
 
-<img width="794" alt="image" src="https://github.com/linyhie/Facility-location-and-pricing-problem/assets/149473529/39f99742-9542-4cbf-893e-6583d177a60f">
-
 # [Facility location and pricing problem: Discretized mill price and exact algorithms](https://doi.org/10.1016/j.ejor.2022.11.052)
 
 This archive is distributed under the [MIT License](LICENSE).
